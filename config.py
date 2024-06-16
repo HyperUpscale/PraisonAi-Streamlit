@@ -1,13 +1,13 @@
 # config.py
 
 MODEL_SETTINGS = {
-    "OpenAi": {
-        "OPENAI_MODEL_NAME": "gpt-4o",
-        "OPENAI_API_BASE": "https://api.openai.com/v1",
-    },
     "Ollama Mistral": {
         "OPENAI_MODEL_NAME": "mistral",
         "OPENAI_API_BASE": "http://localhost:11434/v1",
+    },
+    "OpenAi": {
+        "OPENAI_MODEL_NAME": "gpt-4o",
+        "OPENAI_API_BASE": "https://api.openai.com/v1",
     },
     "FastChat": {
         "OPENAI_MODEL_NAME": "oh-2.5m7b-q51",
