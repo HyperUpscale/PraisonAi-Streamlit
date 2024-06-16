@@ -1,5 +1,6 @@
 from praisonai import PraisonAI
 import streamlit as st
+import requests
 from utils import update_env, get_agents_list, get_api_key, initialize_env, rename_and_move_yaml, load_yaml, save_yaml, initialize_session_state
 from config import MODEL_SETTINGS, FRAMEWORK_OPTIONS, DEFAULT_FRAMEWORK, AGENTS_DIR, AVAILABLE_TOOLS
 
@@ -14,7 +15,24 @@ def update_model():
     st.session_state.api_key = get_api_key(st.session_state.llm_model)
     update_env(st.session_state.llm_model, st.session_state.api_base, st.session_state.api_key)
 
+def get_ollama_models(api_base):
+    try:
+        
+        url = f"{api_base[:-3]}/api/tags"
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception if the request was unsuccessful
+        models = [model['name'] for model in response.json()['models']]
+        return models
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error connecting to the Ollama server: {e}")
+        return []
+
 def generate_response(framework_name):
+    if st.session_state.llm_model == "Ollama":
+        # Use the Ollama provider to generate the response
+        # You'll need to implement the logic for using the Ollama provider here
+        pass
+    else:
         praison_ai_args = {
             "framework": framework_name,
             "auto": prompt if agent == "Auto Generate New Agents" else None,
@@ -77,7 +95,12 @@ with st.sidebar:
     with st.expander("LLM Settings", expanded=True):
         st.selectbox("Select LLM Provider", options=sorted(MODEL_SETTINGS.keys()), key='llm_model', on_change=update_model)
         st.text_input("API Base", value=MODEL_SETTINGS[st.session_state.llm_model]["OPENAI_API_BASE"], key='api_base')
-        st.text_input("Model", value=MODEL_SETTINGS[st.session_state.llm_model]["OPENAI_MODEL_NAME"], key='model_name')
+        
+        if st.session_state.llm_model == "Ollama":
+            models = get_ollama_models(st.session_state.api_base)
+            st.selectbox("Model", models, key='model_name')
+        else:
+            st.text_input("Model", value=MODEL_SETTINGS[st.session_state.llm_model]["OPENAI_MODEL_NAME"], key='model_name')
         st.text_input("API Key", value=st.session_state.api_key, key='api_key', type="password")
     
     with st.expander("Agent Settings", expanded=True):
